@@ -76,9 +76,9 @@ public class Block extends Entity {
 	public boolean contains(Vector3f loc) {
 //		if(x == 2 && y == 10 && z == 1)
 //			System.out.println(String.format("%s,%s,%s %s,%s,%s",loc.x,loc.y,loc.z,x,y,z));
-		return (loc.x >= x && loc.x < x + 1 &&
-				loc.y >= y && loc.y < y + 1 &&
-				loc.z >= z && loc.z < z + 1);
+		return (loc.x > x && loc.x < x + 1 &&
+				loc.y > y && loc.y < y + 1 &&
+				loc.z > z && loc.z < z + 1);
 	}
 	
 }

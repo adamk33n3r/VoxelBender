@@ -1,18 +1,19 @@
 /*
  * Adam Keenan, 2013
  * 
- * This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
- * To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/.
+ * This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit
+ * http://creativecommons.org/licenses/by-sa/3.0/.
  */
 
 package net.adam_keenan.voxel.world;
 
 import static org.lwjgl.opengl.GL11.glBegin;
 import static org.lwjgl.opengl.GL11.glEnd;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
-import net.adam_keenan.voxel.Main;
+import net.adam_keenan.voxel.hud.HUD;
 import net.adam_keenan.voxel.utils.Physics;
 import net.adam_keenan.voxel.utils.Ray;
 import net.adam_keenan.voxel.utils.RayTracer;
@@ -28,16 +29,16 @@ public class Player extends Entity {
 	
 	private int x1 = 0, y1 = 0, z1 = 0;
 	
-	private Vector3f nearVec = new Vector3f(0, 0, 0), farVec = new Vector3f();
-	
 	public Player(Arena arena, int x, int y, int z) {
-		super(x, y, z);
+		super(x+.5f, y, z+.5f);
 		this.arena = arena;
 		this.camera = new Camera(this, x, y, z);
 		this.camera.setup();
 	}
 	
 	private Block getBlockLookedAt() {
+		
+		
 		Vector3f block = getBlock(RayTracer.getScreenCenterRay());
 		float x, y, z;
 		x = block.x;
@@ -52,16 +53,18 @@ public class Player extends Entity {
 		return new Block(-1, -1, -1, BlockType.OUTLINE);
 	}
 	
-	
-	
-	public Vector3f getBlock(Ray ray) {
+	private Vector3f getBlock(Ray ray) {
+		int i = 0;
 		lbl: while (ray.distance < 100) {
 			for (Block[][] blockX : arena.blocks) {
 				for (Block[] blockY : blockX) {
 					for (Block block : blockY) {
 						if (!block.isWalkThroughable())
-							if (block.contains(ray.pos))
+							if (block.contains(ray.pos)) {
+								System.out.println(block.getType()+" " + ray.pos);
+								i++;
 								break lbl;
+							}
 							else if (!arena.contains(ray.pos)) {
 								ray.pos.set(-1, -1, -1);
 								break lbl;
@@ -70,6 +73,15 @@ public class Player extends Entity {
 				}
 			}
 			ray.next();
+		}if (i > 0) {
+			System.out.println("Found block! " + arena.blocks[(int) ray.pos.x][(int) ray.pos.y][(int) ray.pos.z].getType()+ray.pos);
+			x1 = (int) ray.pos.x;
+			y1 = (int) ray.pos.y;
+			z1 = (int) ray.pos.z;
+		} else {
+			x1 = 0;
+			y1 = 0;
+			z1 = 0;
 		}
 		return ray.pos;
 	}
@@ -141,7 +153,6 @@ public class Player extends Entity {
 	@Override
 	public void render() {
 		getBlockLookedAt();
-		
 		GL11.glColor4f(1, 1, 1, .5f);
 		glBegin(GL11.GL_QUADS);
 		{
@@ -151,20 +162,10 @@ public class Player extends Entity {
 			GL11.glVertex3f(x1, y1 + 1, z1 + 1);
 		}
 		glEnd();
-		
-		GL11.glLineWidth(3);
-		GL11.glColor3f(1, 0, 0);
-		GL11.glBegin(GL11.GL_LINES);
-		{
-			GL11.glVertex3f(nearVec.x, nearVec.y, nearVec.z);
-			GL11.glVertex3f(farVec.x, farVec.y, farVec.z);
-		}
-		GL11.glEnd();
 		GL11.glColor3f(1, 1, 1);
-		GL11.glColor3f(1, 1, 1);
-		
 		camera.drawDebug();
-		camera.drawString(Main.WINDOW_WIDTH / 2 - 5, Main.WINDOW_HEIGHT / 2 - 15, "+");
+//		camera.drawString(Main.WINDOW_WIDTH / 2 - 5, Main.WINDOW_HEIGHT / 2 - 15, "+");
+		HUD.drawCrosshairs();
 		
 	}
 	
