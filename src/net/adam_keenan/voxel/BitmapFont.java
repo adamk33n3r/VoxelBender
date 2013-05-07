@@ -1,3 +1,10 @@
+/*
+ * Adam Keenan, 2013
+ * 
+ * This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
+ * To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/.
+ */
+
 package net.adam_keenan.voxel;
 
 import static org.lwjgl.opengl.GL11.GL_BLEND;

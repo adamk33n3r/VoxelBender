@@ -1,3 +1,10 @@
+/*
+ * Adam Keenan, 2013
+ * 
+ * This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
+ * To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/.
+ */
+
 package net.adam_keenan.voxel.world;
 
 import static java.lang.Math.cos;
@@ -39,7 +46,6 @@ public class Camera {
 	float yaw = 0;
 	float pitch = 0;
 	public float x = 0, y = 0, z = 0;
-//	private float			roll;
 	private float fov = 70;
 	private float aspectRatio;
 	private float zNear = .1f;

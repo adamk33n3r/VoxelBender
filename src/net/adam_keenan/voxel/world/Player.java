@@ -1,18 +1,21 @@
+/*
+ * Adam Keenan, 2013
+ * 
+ * This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
+ * To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/.
+ */
+
 package net.adam_keenan.voxel.world;
 
 import static org.lwjgl.opengl.GL11.glBegin;
 import static org.lwjgl.opengl.GL11.glEnd;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-
-import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.vector.Vector3f;
 import net.adam_keenan.voxel.Main;
 import net.adam_keenan.voxel.utils.Physics;
+import net.adam_keenan.voxel.utils.Ray;
+import net.adam_keenan.voxel.utils.RayTracer;
 import net.adam_keenan.voxel.world.Block.BlockType;
 
 public class Player extends Entity {
@@ -35,7 +38,7 @@ public class Player extends Entity {
 	}
 	
 	private Block getBlockLookedAt() {
-		Vector3f block = getScreenCenterRay();
+		Vector3f block = getBlock(RayTracer.getScreenCenterRay());
 		float x, y, z;
 		x = block.x;
 		y = block.y;
@@ -49,37 +52,17 @@ public class Player extends Entity {
 		return new Block(-1, -1, -1, BlockType.OUTLINE);
 	}
 	
-	private Vector3f getScreenCenterRay() {
-		float winX = Display.getWidth() / 2, winY = Display.getHeight() / 2;
-		
-		IntBuffer viewport = BufferUtils.createIntBuffer(16);
-		GL11.glGetInteger(GL11.GL_VIEWPORT, viewport);
-		FloatBuffer modelview = BufferUtils.createFloatBuffer(16);
-		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelview);
-		FloatBuffer projection = BufferUtils.createFloatBuffer(16);
-		GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projection);
-		
-		FloatBuffer positionNear = BufferUtils.createFloatBuffer(3);
-		FloatBuffer positionFar = BufferUtils.createFloatBuffer(3);
-		GLU.gluUnProject(winX, winY, 0, modelview, projection, viewport, positionNear);
-		GLU.gluUnProject(winX, winY, 1, modelview, projection, viewport, positionFar);
-		
-		Vector3f nearVec = new Vector3f(positionNear.get(0), positionNear.get(1), positionNear.get(2));
-		Vector3f farVec = new Vector3f(positionFar.get(0), positionFar.get(1), positionFar.get(2));
-		this.nearVec = nearVec;
-		this.farVec = farVec;
-		Ray ray = new Ray(nearVec, Vector3f.sub(farVec, nearVec, null).normalise(null), .1f);
-		
-		int i = 0;
+	
+	
+	public Vector3f getBlock(Ray ray) {
 		lbl: while (ray.distance < 100) {
 			for (Block[][] blockX : arena.blocks) {
 				for (Block[] blockY : blockX) {
 					for (Block block : blockY) {
 						if (!block.isWalkThroughable())
-							if (block.contains(ray.pos)) {
-								i++;
+							if (block.contains(ray.pos))
 								break lbl;
-							} else if (!arena.contains(ray.pos)) {
+							else if (!arena.contains(ray.pos)) {
 								ray.pos.set(-1, -1, -1);
 								break lbl;
 							}
@@ -88,50 +71,7 @@ public class Player extends Entity {
 			}
 			ray.next();
 		}
-		if (i > 0) {
-//			System.out.println("Found block! " + arena.blocks[(int) ray.pos.x][(int) ray.pos.y][(int) ray.pos.z].getType());
-			x1 = (int) ray.pos.x;
-			y1 = (int) ray.pos.y;
-			z1 = (int) ray.pos.z;
-		} else {
-			x1 = 0;
-			y1 = 0;
-			z1 = 0;
-		}
 		return ray.pos;
-	}
-	
-	private class Ray {
-		
-		Vector3f pos, dir, scaledDir;
-		float distance;
-		float scalar;
-		
-		public Ray(Vector3f pos, Vector3f dir, float scalar) {
-			this.pos = pos;
-			this.dir = dir;
-			this.scalar = scalar;
-			this.scaledDir = scale(dir, scalar);
-		}
-		
-		public void next() {
-			pos = Vector3f.add(pos, scaledDir, null);
-			distance += scalar;
-		}
-		
-		private Vector3f scale(Vector3f vec, float scalar) {
-			Vector3f tmp = new Vector3f();
-			tmp.x = vec.x * scalar;
-			tmp.y = vec.y * scalar;
-			tmp.z = vec.z * scalar;
-			return tmp;
-		}
-		
-		@Override
-		public String toString() {
-//			return String.format("Ray: Pos = (%s) Dir = (%s)", pos, dir);
-			return String.format("Ray: Dir = (%s)", dir);
-		}
 	}
 	
 	public void processKeyboard(int delta) {
