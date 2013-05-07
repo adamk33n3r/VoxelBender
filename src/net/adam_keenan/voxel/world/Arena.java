@@ -1,6 +1,5 @@
 package net.adam_keenan.voxel.world;
 
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 
 import net.adam_keenan.voxel.utils.TextureLoader;

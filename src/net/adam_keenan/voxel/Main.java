@@ -1,11 +1,6 @@
 package net.adam_keenan.voxel;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.*;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.nio.FloatBuffer;
 
 import net.adam_keenan.voxel.utils.TextureLoader;
@@ -161,49 +156,7 @@ public class Main {
 		}
 	}
 	
-	private void renderPlatform() {
-		glColor3f(1, 0, 0);
-		for (int x = -1; x < 2; x++)
-			for (int y = -1; y < 2; y++) {
-				glBegin(GL_QUADS);
-				{
-					if (x == 0 && y == 0) {
-						glColor3f(1, 1, 0);
-					} else {
-						glColor3f(1, 0, 0);
-					}
-//					glTexCoord2f(0, 0);
-					glVertex3i((int) player.getX() + x, (int) player.getY(), (int) player.getZ() + 1 + y);
-//					glTexCoord2f(1, 0);
-					glVertex3i((int) player.getX() + 1 + x, (int) player.getY(), (int) player.getZ() + 1 + y);
-//					glTexCoord2f(1, 1);
-					glVertex3i((int) player.getX() + 1 + x, (int) player.getY(), (int) player.getZ() + y);
-//					glTexCoord2f(0, 1);
-					glVertex3i((int) player.getX() + x, (int) player.getY(), (int) player.getZ() + y);
-					
-				}
-				glEnd();
-			}
-		glColor3f(1, 1, 1);
-	}
-	
 	private void processInput(int delta) {
-//		if (Keyboard.isKeyDown(Keyboard.KEY_P))
-//			currentShader = perPixelShaderProgram;
-//		if (Keyboard.isKeyDown(Keyboard.KEY_V))
-//			currentShader = perVertexShaderProgram;
-//		if(Keyboard.isKeyDown(Keyboard.KEY_1))
-//			TextureLoader.bind(Textures.DIRT);
-//		if(Keyboard.isKeyDown(Keyboard.KEY_2))
-//			TextureLoader.bind(Textures.GRASS_SIDE);
-//		if(Keyboard.isKeyDown(Keyboard.KEY_3))
-//			TextureLoader.bind(Textures.STONE);
-		
-		//Keyboard.enableRepeatEvents(false);
-		
-		//if (Keyboard.isKeyDown(Keyboard.KEY_R))
-		//chunky.RebuildMesh(0, 0, 0);
-		
 		if (Mouse.isButtonDown(0)) {
 			Mouse.setGrabbed(true);
 		} else if (Mouse.isButtonDown(1)) {

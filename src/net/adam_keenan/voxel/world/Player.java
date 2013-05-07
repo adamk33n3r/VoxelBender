@@ -1,15 +1,7 @@
 package net.adam_keenan.voxel.world;
 
-import static org.lwjgl.opengl.GL11.GL_POINTS;
-import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL11.glBegin;
-import static org.lwjgl.opengl.GL11.glColor3f;
 import static org.lwjgl.opengl.GL11.glEnd;
-import static org.lwjgl.opengl.GL11.glPointSize;
-import static org.lwjgl.opengl.GL11.glRecti;
-import static org.lwjgl.opengl.GL11.glVertex3f;
-
-import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -17,12 +9,8 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.Point;
 import org.lwjgl.util.glu.GLU;
-import org.lwjgl.util.vector.Vector;
 import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
-
 import net.adam_keenan.voxel.Main;
 import net.adam_keenan.voxel.utils.Physics;
 import net.adam_keenan.voxel.world.Block.BlockType;
@@ -36,7 +24,6 @@ public class Player extends Entity {
 	private boolean jumped;
 	
 	private int x1 = 0, y1 = 0, z1 = 0;
-	private float x2 = 0, y2 = 0, z2 = 0;
 	
 	private Vector3f nearVec = new Vector3f(0, 0, 0), farVec = new Vector3f();
 	
@@ -48,9 +35,7 @@ public class Player extends Entity {
 	}
 	
 	private Block getBlockLookedAt() {
-		long prevTime = System.currentTimeMillis();
-		Vector3f block = getMousePositionRay(Display.getWidth() / 2, Display.getHeight() / 2);
-//		System.out.println(String.format("Took %s seconds long to pick block",(float) (System.currentTimeMillis() - prevTime) / 1000));
+		Vector3f block = getScreenCenterRay();
 		float x, y, z;
 		x = block.x;
 		y = block.y;
@@ -64,47 +49,15 @@ public class Player extends Entity {
 		return new Block(-1, -1, -1, BlockType.OUTLINE);
 	}
 	
-	private FloatBuffer getMousePosition(int mouseX, int mouseY) {
-		IntBuffer viewport = BufferUtils.createIntBuffer(16);
-		GL11.glGetInteger(GL11.GL_VIEWPORT, viewport);
-//		System.out.println(String.format("%s, %s, %s, %s",viewport.get(0),viewport.get(1),viewport.get(2),viewport.get(3)));
-		FloatBuffer modelview = BufferUtils.createFloatBuffer(16);
-		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelview);
-		FloatBuffer projection = BufferUtils.createFloatBuffer(16);
-		GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projection);
+	private Vector3f getScreenCenterRay() {
+		float winX = Display.getWidth() / 2, winY = Display.getHeight() / 2;
 		
-		float winX, winY;
-		FloatBuffer winZ = BufferUtils.createFloatBuffer(3);
-		
-		winX = (float) mouseX;
-		winY = (float) viewport.get(3) - (float) mouseY;
-		GL11.glReadPixels(mouseX, (int) winY, 1, 1, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, winZ);
-		
-		FloatBuffer position = BufferUtils.createFloatBuffer(3);
-		FloatBuffer positionFar = BufferUtils.createFloatBuffer(3);
-		GLU.gluUnProject(winX, winY, winZ.get(0), modelview, projection, viewport, position);
-//		GLU.gluUnProject(winX, winY, 0, modelview, projection, viewport, position);
-//		GLU.gluUnProject(winX, winY, 1, modelview, projection, viewport, positionFar);
-//		position.put(1,position.get(1) + .1f);
-//		position.put(2,position.get(2) - .1f);
-		glPointSize(10);
-		glBegin(GL_POINTS);
-		glColor3f(1, 0, 0);
-		glVertex3f(position.get(0), position.get(1), position.get(2));
-		glEnd();
-		glColor3f(1, 1, 1);
-		return position;
-	}
-	
-	private Vector3f getMousePositionRay(int mouseX, int mouseY) {
 		IntBuffer viewport = BufferUtils.createIntBuffer(16);
 		GL11.glGetInteger(GL11.GL_VIEWPORT, viewport);
 		FloatBuffer modelview = BufferUtils.createFloatBuffer(16);
 		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelview);
 		FloatBuffer projection = BufferUtils.createFloatBuffer(16);
 		GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projection);
-		
-		float winX = mouseX, winY = (float) viewport.get(3) - (float) mouseY;
 		
 		FloatBuffer positionNear = BufferUtils.createFloatBuffer(3);
 		FloatBuffer positionFar = BufferUtils.createFloatBuffer(3);

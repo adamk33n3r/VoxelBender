@@ -1,10 +1,5 @@
 package net.adam_keenan.voxel.world;
 
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.glDisable;
-import static org.lwjgl.opengl.GL11.glDisableClientState;
-import static org.lwjgl.opengl.GL11.glEnable;
-
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -15,7 +10,6 @@ import org.lwjgl.opengl.ARBVertexBufferObject;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GLContext;
 
 public class BlockVBO {
