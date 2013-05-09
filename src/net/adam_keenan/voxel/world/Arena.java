@@ -7,11 +7,12 @@
 
 package net.adam_keenan.voxel.world;
 
+import java.util.ArrayList;
+
 import org.lwjgl.util.vector.Vector3f;
 
-import net.adam_keenan.voxel.utils.TextureLoader;
-import net.adam_keenan.voxel.utils.TextureLoader.Textures;
 import net.adam_keenan.voxel.world.Block.BlockType;
+import net.adam_keenan.voxel.world.player.Projectile;
 
 public class Arena {
 	
@@ -19,8 +20,15 @@ public class Arena {
 	final int CUBE_LENGTH = 1;
 	
 	public Block[][][] blocks;
+	private ArrayList<Projectile> projectiles;
 	
 	public Arena() {
+	}
+	
+	public void addProjectile(Projectile proj) {
+		if (projectiles == null)
+			projectiles = new ArrayList<Projectile>();
+		projectiles.add(proj);
 	}
 	
 	public void genTwoBlocks() {
@@ -133,14 +141,19 @@ public class Arena {
 ////		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 //	}
 	
+	public void update() {
+		for (Projectile projectile : projectiles)
+			projectile.update();
+	}
+	
 	public void render() {
-		TextureLoader.bind(Textures.SHEET);
 		for (Block[][] blockX : blocks)
 			for (Block[] blockY : blockX)
 				for (Block block : blockY)
 					if (block.getType() != BlockType.AIR)
 						block.render();
-		TextureLoader.unbind();
+		for (Projectile projectile : projectiles)
+			projectile.render();
 	}
 
 	public boolean contains(Vector3f pos) {

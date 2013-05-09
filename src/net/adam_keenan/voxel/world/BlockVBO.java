@@ -1,8 +1,8 @@
 /*
  * Adam Keenan, 2013
  * 
- * This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
- * To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/.
+ * This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit
+ * http://creativecommons.org/licenses/by-sa/3.0/.
  */
 
 package net.adam_keenan.voxel.world;
@@ -10,6 +10,8 @@ package net.adam_keenan.voxel.world;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import net.adam_keenan.voxel.utils.TextureLoader;
+import net.adam_keenan.voxel.utils.TextureLoader.Textures;
 import net.adam_keenan.voxel.world.Block.BlockType;
 
 import org.lwjgl.BufferUtils;
@@ -21,15 +23,15 @@ import org.lwjgl.opengl.GLContext;
 
 public class BlockVBO {
 	
-	private final int vertexBufferID, colorBufferID, dirtTextureID, stoneTextureID, grassTextureID, indexBufferID;
+	private final int blockVertexBufferID, projectileVBOID, dirtTextureID, stoneTextureID, grassTextureID, indexBufferID;
 	
 	private static BlockVBO instance;
 	
 	private final static int TEXTURE_SIZE = 4;
 	
 	private BlockVBO() {
-		this.vertexBufferID = createVBOID();
-		this.colorBufferID = createVBOID();
+		this.blockVertexBufferID = createVBOID();
+		this.projectileVBOID = createVBOID();
 		this.dirtTextureID = createVBOID();
 		this.stoneTextureID = createVBOID();
 		this.grassTextureID = createVBOID();
@@ -40,8 +42,8 @@ public class BlockVBO {
 	public static BlockVBO getInstance() {
 		if (instance == null) {
 			instance = new BlockVBO();
-			instance.bufferData(instance.vertexBufferID, createVertexFloatBuffer());
-			instance.bufferData(instance.colorBufferID, createColorFloatBuffer());
+			instance.bufferData(instance.blockVertexBufferID, createVertexFloatBuffer(1));
+			instance.bufferData(instance.projectileVBOID, createItemVertexFloatBuffer(.1f));
 			instance.bufferData(instance.dirtTextureID, createTextureFloatBuffer(BlockType.DIRT));
 			instance.bufferData(instance.stoneTextureID, createTextureFloatBuffer(BlockType.STONE));
 			instance.bufferData(instance.grassTextureID, createTextureFloatBuffer(BlockType.GRASS));
@@ -64,50 +66,37 @@ public class BlockVBO {
 		}
 	}
 	
-	private static FloatBuffer createVertexFloatBuffer() {
+	private static FloatBuffer createVertexFloatBuffer(float size) {
 		// 3 Coords, 4 Points per face, 6 Faces
 		FloatBuffer fBuf = BufferUtils.createFloatBuffer(3 * 4 * 6);
-		fBuf.put(createVertexArray(0, 0, 0));
+		fBuf.put(createVertexArray(0, 0, 0, size));
 		fBuf.flip();
 		return fBuf;
 	}
 	
-	private static float[] createVertexArray(int x, int y, int z) {
+	private static FloatBuffer createItemVertexFloatBuffer(float size) {
+		// 3 Coords, 4 Points per face, 6 Faces
+		FloatBuffer fBuf = BufferUtils.createFloatBuffer(3 * 4 * 6);
+		fBuf.put(createVertexArray(-size/2, size/3*2, -size/2, size));
+		fBuf.flip();
+		return fBuf;
+	}
+	
+	private static float[] createVertexArray(float x, float y, float z, float size) {
 		// TODO: The sides may not be in the right order
 		return new float[] {
 				// BOTTOM QUAD
-				x, y, z, x + 1, y, z, x + 1, y, z + 1, x, y, z + 1,
+				x, y, z, x + size, y, z, x + size, y, z + size, x, y, z + size,
 				// TOP QUAD
-				x, y + 1, z + 1, x + 1, y + 1, z + 1, x + 1, y + 1, z, x, y + 1, z,
+				x, y + size, z + size, x + size, y + size, z + size, x + size, y + size, z, x, y + size, z,
 				// FRONT QUAD
-				x + 1, y, z, x, y, z, x, y + 1, z, x + 1, y + 1, z,
+				x + size, y, z, x, y, z, x, y + size, z, x + size, y + size, z,
 				// BACK QUAD
-				x, y, z + 1, x + 1, y, z + 1, x + 1, y + 1, z + 1, x, y + 1, z + 1,
+				x, y, z + size, x + size, y, z + size, x + size, y + size, z + size, x, y + size, z + size,
 				// LEFT QUAD
-				x, y, z, x, y, z + 1, x, y + 1, z + 1, x, y + 1, z,
+				x, y, z, x, y, z + size, x, y + size, z + size, x, y + size, z,
 				// RIGHT QUAD
-				x + 1, y, z + 1, x + 1, y, z, x + 1, y + 1, z, x + 1, y + 1, z + 1 };
-	}
-	
-	private static FloatBuffer createColorFloatBuffer() {
-		// 4 Colors, 4 Points per face, 6 Faces
-		FloatBuffer fBuf = BufferUtils.createFloatBuffer(4 * 4 * 6);
-		fBuf.put(createColorArray());
-		fBuf.flip();
-		return fBuf;
-	}
-	
-	private static float[] createColorArray() {
-//		return createCubeVertexCol(new float[] { .52f, .37f, .26f, 1 });
-		return createCubeVertexCol(new float[] { 1, 1, 1, 0 });
-	}
-	
-	private static float[] createCubeVertexCol(float[] cubeColorArray) {
-		float[] cubeColors = new float[cubeColorArray.length * 4 * 6];
-		for (int i = 0; i < cubeColors.length; i++) {
-			cubeColors[i] = cubeColorArray[i % cubeColorArray.length];
-		}
-		return cubeColors;
+				x + size, y, z + size, x + size, y, z, x + size, y + size, z, x + size, y + size, z + size };
 	}
 	
 	private static FloatBuffer createTextureFloatBuffer(BlockType type) {
@@ -194,27 +183,32 @@ public class BlockVBO {
 		return arr;
 	}
 	
-	public void render(BlockType type, int x, int y, int z) {
-		int id;
+	public void render(BlockType type, float x, float y, float z) {
+		TextureLoader.bind(Textures.SHEET);
+		int vertID = this.blockVertexBufferID, texID;
 		switch (type) {
 			case DIRT:
-				id = dirtTextureID;
+				texID = dirtTextureID;
 				break;
 			case STONE:
-				id = stoneTextureID;
+				texID = stoneTextureID;
 				break;
 			case GRASS:
-				id = grassTextureID;
+				texID = grassTextureID;
 				break;
 			case AIR:
-				id = 0;
+				texID = 0;
+				break;
+			case FIRE:
+				texID = grassTextureID;
+				vertID = this.projectileVBOID;
 				break;
 			default:
-				id = stoneTextureID;
+				texID = stoneTextureID;
 				break;
 		
 		}
-		if (id == 0)
+		if (texID == 0)
 			return;
 		GL11.glPushMatrix();
 		GL11.glTranslatef(x, y, z);
@@ -223,18 +217,12 @@ public class BlockVBO {
 		GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 		
 		// Vertex array
-		ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, vertexBufferID);
+		ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, vertID);
 		GL11.glVertexPointer(3, GL11.GL_FLOAT, 0, 0);
 		
-		// Color array
-//		ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, colorBufferID);
-//		GL11.glColorPointer(4, GL11.GL_FLOAT, 0, 0);
-		
 		// Texture array
-		ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, id);
-//		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, id);
-		if (id != 0)
-			GL11.glTexCoordPointer(2, GL11.GL_FLOAT, 0, 0);
+		ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, texID);
+		GL11.glTexCoordPointer(2, GL11.GL_FLOAT, 0, 0);
 		
 		// Index array
 		ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ELEMENT_ARRAY_BUFFER_ARB, indexBufferID);
@@ -243,12 +231,10 @@ public class BlockVBO {
 		GL12.glDrawRangeElements(GL11.GL_QUADS, 0, 6 * 4, 6 * 4, GL11.GL_UNSIGNED_INT, 0);
 		
 		GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
-//		if (id == 0)
-//			glDisableClientState(GL11.GL_COLOR_ARRAY);
 		GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 		
 		GL11.glPopMatrix();
-		
+		TextureLoader.unbind();
 	}
 	
 	private void bufferData(int id, FloatBuffer buffer) {

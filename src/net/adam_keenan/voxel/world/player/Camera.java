@@ -5,7 +5,7 @@
  * To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/.
  */
 
-package net.adam_keenan.voxel.world;
+package net.adam_keenan.voxel.world.player;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
@@ -31,7 +31,8 @@ import java.awt.Color;
 import java.nio.FloatBuffer;
 import java.text.DecimalFormat;
 
-import net.adam_keenan.voxel.Main;
+import net.adam_keenan.voxel.VoxelBender;
+
 import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -62,7 +63,7 @@ public class Camera {
 	
 	public Camera(Player player, int x, int y, int z) {
 		setUpFonts();
-		this.aspectRatio = (float) Main.WINDOW_WIDTH / Main.WINDOW_HEIGHT;
+		this.aspectRatio = (float) VoxelBender.WINDOW_WIDTH / VoxelBender.WINDOW_HEIGHT;
 		this.player = player;
 		this.x = x + .5f;
 		this.y = y + 1.5f;
@@ -158,9 +159,11 @@ public class Camera {
 		}
 	}
 	
-	public void processMouse(float mouseSpeed, float maxLookUp, float maxLookDown) {
+	public boolean processMouse(float mouseSpeed, float maxLookUp, float maxLookDown) {
 		float mouseDX = Mouse.getDX() * mouseSpeed * 0.16f;
 		float mouseDY = Mouse.getDY() * mouseSpeed * 0.16f;
+		if (mouseDX == 0 && mouseDY == 0)
+			return false;
 		yaw = (yaw + mouseDX) % 360;
 		if (yaw < 0)
 			yaw += 360;
@@ -170,6 +173,7 @@ public class Camera {
 			pitch = maxLookUp;
 		else if (pitch + mouseDY < maxLookDown)
 			pitch = maxLookDown;
+		return true;
 	}
 	
 	void up(float dy) {

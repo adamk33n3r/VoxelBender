@@ -5,45 +5,72 @@
  * http://creativecommons.org/licenses/by-sa/3.0/.
  */
 
-package net.adam_keenan.voxel.world;
+package net.adam_keenan.voxel.world.player;
 
 import static org.lwjgl.opengl.GL11.glBegin;
 import static org.lwjgl.opengl.GL11.glEnd;
 
+import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 import net.adam_keenan.voxel.hud.HUD;
-import net.adam_keenan.voxel.utils.Physics;
 import net.adam_keenan.voxel.utils.Ray;
 import net.adam_keenan.voxel.utils.RayTracer;
+import net.adam_keenan.voxel.world.Arena;
+import net.adam_keenan.voxel.world.Block;
+import net.adam_keenan.voxel.world.Entity;
+import net.adam_keenan.voxel.world.Physics;
 import net.adam_keenan.voxel.world.Block.BlockType;
+import net.adam_keenan.voxel.world.player.BendingStyle.Element;
 
 public class Player extends Entity {
+	
+	BendingStyle style;
 	
 	private final boolean FLY = false;
 	
 	private Camera camera;
 	
 	private boolean jumped;
+	private boolean mouseChanged, keyboardChanged;
+	
+	Block curBlock;
+	Vector3f curBlockVec;
+	private int lastSearch;
+	
+	Projectile projectile;
 	
 	private int x1 = 0, y1 = 0, z1 = 0;
+	private final int SIZE = 1;
 	
-	public Player(Arena arena, int x, int y, int z) {
-		super(x+.5f, y, z+.5f);
+	public Player(Element type, Arena arena, int x, int y, int z) {
+		super(x + .5f, y, z + .5f);
 		this.arena = arena;
 		this.camera = new Camera(this, x, y, z);
 		this.camera.setup();
+		curBlock = new Block(0, 0, 0, null);
+		curBlockVec = new Vector3f();
+		this.style = new BendingStyle(this, type);
+		this.projectile = this.style.conjure();
+		arena.addProjectile(projectile);
+	}
+	
+	public Camera getCamera() {
+		return camera;
 	}
 	
 	private Block getBlockLookedAt() {
-		
-		
-		Vector3f block = getBlock(RayTracer.getScreenCenterRay());
+		lastSearch++;
+		if ((mouseChanged || keyboardChanged) && lastSearch > 5) {
+			curBlockVec = getBlock(RayTracer.getScreenCenterRay());
+			lastSearch = 0;
+		}
 		float x, y, z;
-		x = block.x;
-		y = block.y;
-		z = block.z;
+		x = curBlockVec.x;
+		y = curBlockVec.y;
+		z = curBlockVec.z;
 		camera.drawString(10, 150, String.format("(%s, %s, %s)", x, y, z));
 		camera.drawString(10, 170, String.format("(%s, %s, %s)", (int) x, (int) y, (int) z));
 		if (x != -1 && y != -1 && z != -1 && arena.inBounds((int) x, (int) y, (int) z)) {
@@ -55,17 +82,15 @@ public class Player extends Entity {
 	
 	private Vector3f getBlock(Ray ray) {
 		int i = 0;
-		lbl: while (ray.distance < 100) {
+		lbl: while (ray.distance < 10) {
 			for (Block[][] blockX : arena.blocks) {
 				for (Block[] blockY : blockX) {
 					for (Block block : blockY) {
 						if (!block.isWalkThroughable())
 							if (block.contains(ray.pos)) {
-								System.out.println(block.getType()+" " + ray.pos);
 								i++;
 								break lbl;
-							}
-							else if (!arena.contains(ray.pos)) {
+							} else if (!arena.contains(ray.pos)) {
 								ray.pos.set(-1, -1, -1);
 								break lbl;
 							}
@@ -73,8 +98,9 @@ public class Player extends Entity {
 				}
 			}
 			ray.next();
-		}if (i > 0) {
-			System.out.println("Found block! " + arena.blocks[(int) ray.pos.x][(int) ray.pos.y][(int) ray.pos.z].getType()+ray.pos);
+		}
+		if (i > 0) {
+//			System.out.println("Found block! " + arena.blocks[(int) ray.pos.x][(int) ray.pos.y][(int) ray.pos.z].getType()+ray.pos);
 			x1 = (int) ray.pos.x;
 			y1 = (int) ray.pos.y;
 			z1 = (int) ray.pos.z;
@@ -82,11 +108,23 @@ public class Player extends Entity {
 			x1 = 0;
 			y1 = 0;
 			z1 = 0;
+			ray.pos.set(-1, -1, -1);
 		}
 		return ray.pos;
 	}
 	
 	public void processKeyboard(int delta) {
+		
+		if (Keyboard.isKeyDown(Keyboard.KEY_O))
+			this.projectile.attached = false;
+		if (Keyboard.isKeyDown(Keyboard.KEY_P)) {
+//			projectile.attached = true;
+			if (!this.projectile.attached) {
+				this.projectile = this.style.conjure();
+				arena.addProjectile(this.projectile);
+			}
+		}
+		
 		boolean keyUp = false, keyDown = false, keyRight = false, keyLeft = false, keySpace = false, keyShift = false;
 		
 		keyUp = Keyboard.isKeyDown(Keyboard.KEY_UP) || Keyboard.isKeyDown(Keyboard.KEY_W);
@@ -95,14 +133,11 @@ public class Player extends Entity {
 		keyRight = Keyboard.isKeyDown(Keyboard.KEY_RIGHT) || Keyboard.isKeyDown(Keyboard.KEY_D);
 		keySpace = Keyboard.isKeyDown(Keyboard.KEY_SPACE);
 		keyShift = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
-		boolean keyP = Keyboard.isKeyDown(Keyboard.KEY_P);
-		if (keyP)
-			getBlockLookedAt();
 		
 		float dx = 0, dy = 0, dz = 0;
 		float amount = delta * .003f;
-		if (jumped)
-			amount = delta * .0015f;
+//		if (jumped)
+//			amount = delta * .0015f;
 		dx += keyRight ? amount : 0;
 		dx += keyLeft ? -amount : 0;
 		dz += keyUp ? -amount : 0;
@@ -114,9 +149,11 @@ public class Player extends Entity {
 				fallSpeed = -.15f;
 			}
 			if (Physics.gravity(this, fallSpeed)) {
+				keyboardChanged = true;
 				fallSpeed += fallSpeed > 1.5f ? 0 : .01f;
 				jumped = true;
 			} else {
+				keyboardChanged = false;
 				fallSpeed = 0;
 				jumped = false;
 			}
@@ -134,11 +171,19 @@ public class Player extends Entity {
 	}
 	
 	private void move(float dx, float dz) {
+		if (dx == 0 && dz == 0) {
+			keyboardChanged = false;
+			return;
+		}
+		keyboardChanged = true;
+		
 		Physics.moveWithCollisions(this, dx, dz);
 	}
 	
 	public void processMouse() {
-		camera.processMouse(.75f, 90, -90);
+		mouseChanged = camera.processMouse(.75f, 90, -80);
+		if (Mouse.isButtonDown(0))
+			curBlock.move(0, -.1f, 0);
 		this.yaw = camera.yaw;
 	}
 	
@@ -148,23 +193,27 @@ public class Player extends Entity {
 		camera.y = this.y + 1.62f;
 		camera.z = this.z;
 		camera.update();
+		
 	}
 	
 	@Override
 	public void render() {
-		getBlockLookedAt();
+		curBlock = getBlockLookedAt();
 		GL11.glColor4f(1, 1, 1, .5f);
-		glBegin(GL11.GL_QUADS);
-		{
-			GL11.glVertex3f(x1, y1 + 1, z1);
-			GL11.glVertex3f(x1 + 1, y1 + 1, z1);
-			GL11.glVertex3f(x1 + 1, y1 + 1, z1 + 1);
-			GL11.glVertex3f(x1, y1 + 1, z1 + 1);
-		}
-		glEnd();
+		for (int row = 0; row < SIZE; row++)
+			for (int col = 0; col < SIZE; col++) {
+				glBegin(GL11.GL_QUADS);
+				{
+					GL11.glVertex3f(x1, y1 + 1, col + z1);
+					GL11.glVertex3f(x1 + 1, y1 + 1, col + z1);
+					GL11.glVertex3f(x1 + 1, y1 + 1, col + z1 + 1);
+					GL11.glVertex3f(x1, y1 + 1, col + z1 + 1);
+				}
+				glEnd();
+			}
 		GL11.glColor3f(1, 1, 1);
 		camera.drawDebug();
-//		camera.drawString(Main.WINDOW_WIDTH / 2 - 5, Main.WINDOW_HEIGHT / 2 - 15, "+");
+		camera.drawString(100, 300, String.format("%f, %f, %f", projectile.x, projectile.y, projectile.z));
 		HUD.drawCrosshairs();
 		
 	}

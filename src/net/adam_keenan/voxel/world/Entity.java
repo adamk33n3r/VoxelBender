@@ -16,7 +16,7 @@ public abstract class Entity {
 	public Arena arena;
 
 	
-	public Entity(float x, int y, float z) {
+	public Entity(float x, float y, float z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;

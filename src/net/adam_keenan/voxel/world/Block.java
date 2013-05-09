@@ -18,7 +18,7 @@ public class Block extends Entity {
 	private BlockVBO vbo;
 	
 	public enum BlockType {
-		AIR(0), GRASS(1), DIRT(2), WATER(3), STONE(4), WOOD(5), SAND(6), NUM_TYPES(8), OUTLINE(7);
+		AIR(0), GRASS(1), DIRT(2), WATER(3), STONE(4), WOOD(5), SAND(6), OUTLINE(7), FIRE(8);
 		
 		private int blockID;
 		
@@ -70,7 +70,7 @@ public class Block extends Entity {
 	
 	@Override
 	public void render() {
-		this.vbo.render(type, (int) x, (int) y, (int) z);
+		this.vbo.render(type, x, y, z);
 	}
 
 	public boolean contains(Vector3f loc) {
@@ -79,6 +79,12 @@ public class Block extends Entity {
 		return (loc.x > x && loc.x < x + 1 &&
 				loc.y > y && loc.y < y + 1 &&
 				loc.z > z && loc.z < z + 1);
+	}
+
+	public void move(float dx, float dy, float dz) {
+		this.x += dx;
+		this.y += dy;
+		this.z += dz;
 	}
 	
 }

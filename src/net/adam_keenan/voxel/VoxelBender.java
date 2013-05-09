@@ -8,12 +8,15 @@
 package net.adam_keenan.voxel;
 
 import static org.lwjgl.opengl.GL11.*;
+
+import java.awt.SystemTray;
 import java.nio.FloatBuffer;
 
 import net.adam_keenan.voxel.utils.TextureLoader;
 import net.adam_keenan.voxel.utils.TextureLoader.Textures;
 import net.adam_keenan.voxel.world.Arena;
-import net.adam_keenan.voxel.world.Player;
+import net.adam_keenan.voxel.world.player.BendingStyle.Element;
+import net.adam_keenan.voxel.world.player.Player;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
@@ -22,7 +25,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 
-public class Main {
+public class VoxelBender {
 	
 	public final static int WINDOW_WIDTH = 856;
 	public final static int WINDOW_HEIGHT = 480;
@@ -87,7 +90,7 @@ public class Main {
 		lastFPS = getTime();
 		arena = new Arena();
 		arena.genArena();
-		player = new Player(arena, 10, 17, 10);
+		player = new Player(Element.FIRE, arena, 10, 17, 10);
 		
 		TextureLoader.loadTextures(false);
 		TextureLoader.bind(Textures.SHEET);
@@ -97,7 +100,7 @@ public class Main {
 	
 	private void run() {
 			
-			Display.setVSyncEnabled(vSync);
+//			Display.setVSyncEnabled(vSync);
 			while (!Display.isCloseRequested()) {
 				delta = getDelta();
 				
@@ -108,15 +111,18 @@ public class Main {
 	//			font.draw("test", -.9f, 0, .3f, .225f);
 				player.update();
 				
+				arena.update();
 				arena.render();
 				
+//				long time = System.currentTimeMillis();
 				player.render();
+//				System.out.println(System.currentTimeMillis() - time);
 				
 				Display.update();
-				Display.sync(60);
+//				Display.sync(60);
 				processInput(delta);
 				updateFPS();
-				Display.setTitle("Voxel - FPS: " + curFPS + " - Delta: " + delta + " - Java Version: " + System.getProperty("java.version"));
+				Display.setTitle("VoxelBender - FPS: " + curFPS + " - Delta: " + delta + " - Java Version: " + System.getProperty("java.version"));
 				
 			}
 			Display.destroy();
@@ -156,7 +162,7 @@ public class Main {
 		Display.setDisplayMode(displayMode);*/
 		try {
 			Display.setDisplayMode(new DisplayMode(WINDOW_WIDTH, WINDOW_HEIGHT));
-			Display.setTitle("Voxel");
+			Display.setTitle("VoxelBender");
 			Display.create();
 		} catch (LWJGLException e) {
 			e.printStackTrace();
@@ -164,7 +170,7 @@ public class Main {
 	}
 	
 	private void processInput(int delta) {
-		if (Mouse.isButtonDown(0)) {
+		if (Mouse.isButtonDown(0) && !Mouse.isGrabbed()) {
 			Mouse.setGrabbed(true);
 		} else if (Mouse.isButtonDown(1)) {
 			Mouse.setGrabbed(false);
@@ -177,7 +183,7 @@ public class Main {
 	}
 	
 	public static void main(String[] args) throws LWJGLException {
-		Main r = new Main();
+		VoxelBender r = new VoxelBender();
 		r.start();
 	}
 }
