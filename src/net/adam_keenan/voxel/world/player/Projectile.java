@@ -15,7 +15,6 @@ public class Projectile extends Entity {
 	Element type;
 	
 	boolean attached;
-	float accel = 0;
 	
 	public Projectile(Player player, Element type) {
 		super(player.x, player.y + 1.5f, player.z);
@@ -33,10 +32,12 @@ public class Projectile extends Entity {
 			this.x = this.player.x + dir.x;
 			this.y = this.player.y + 1.5f + dir.y;
 			this.z = this.player.z + dir.z;
-		}else {
-			fallSpeed += .01f + accel;
-			accel+=.15f;
-		}Physics.gravity(this, fallSpeed);
+		} else {
+			fallSpeed += .01f;
+//			accel+=.05f;
+			Physics.gravity(this);
+			Physics.moveEntityMomentum(this, player);
+		}
 	}
 	
 	@Override

@@ -50,6 +50,9 @@ public class Arena {
 					if ((y == Y_SIZE - 1 && x == 5 && z == 5) || (y == 15 && x == 10 && z == 10) || (y == Y_SIZE - 6 && x == 10 && z == 11)
 							|| (y == 11 && x == 1 && z == 1) || (y == 10 && x == 2 && z == 1))
 						type = BlockType.GRASS;
+					else if (y > 9 && ((x == 0 || x == X_SIZE - 1) || (z == 0 || z == Z_SIZE - 1))) {
+						type = BlockType.DIRT;
+					}
 					else if (y < 5 || (y == 12 && x == 1 && z == 2))
 						type = BlockType.STONE;
 					else if (y < Y_SIZE / 2 - 1)

@@ -7,11 +7,16 @@
 
 package net.adam_keenan.voxel.world;
 
+import org.lwjgl.util.vector.Vector3f;
+
 public abstract class Entity {
 	
 	public float x, y, z;
 	public float yaw = 0;
 	public float fallSpeed;
+	public Vector3f momentum;
+	public float accel = 0, speed;
+
 	
 	public Arena arena;
 
@@ -21,6 +26,7 @@ public abstract class Entity {
 		this.y = y;
 		this.z = z;
 		this.yaw = 0;
+		this.momentum = new Vector3f();
 	}
 	
 	

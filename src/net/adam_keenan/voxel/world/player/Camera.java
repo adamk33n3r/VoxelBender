@@ -164,6 +164,8 @@ public class Camera {
 		float mouseDY = Mouse.getDY() * mouseSpeed * 0.16f;
 		if (mouseDX == 0 && mouseDY == 0)
 			return false;
+//		else
+//			System.out.println(mouseDX / mouseSpeed / .16f + " " + mouseDY / mouseSpeed / .16f);
 		yaw = (yaw + mouseDX) % 360;
 		if (yaw < 0)
 			yaw += 360;

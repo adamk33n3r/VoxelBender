@@ -11,10 +11,11 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
 
+import org.lwjgl.util.vector.Vector3f;
+
 public class Physics {
 	
 	public Physics() {
-		
 	}
 	
 	/**
@@ -25,15 +26,17 @@ public class Physics {
 	 * @param z
 	 * @return true if CAN move
 	 */
-	public static boolean moveWithCollisions(Entity entity, float dx, float dz) {
+	public static boolean moveWithCollisions(Entity entity, float dx, float dz, Entity camEntity) {
+		if (camEntity == null)
+			camEntity = entity;
 		Arena arena = entity.arena;
 //		System.out.println(String.format("Standing on: (%s, %s, %s) : %s", entity.x, entity.y, entity.z,
 //				arena.blocks[(int) entity.x][(int) entity.y - 1][(int) entity.z].getType()));
 		if (entity.x < 0 || entity.y < 0 || entity.z < 0 || entity.x >= arena.X_SIZE || entity.y >= arena.Y_SIZE || entity.z >= arena.Z_SIZE)
 			return false;
 		
-		float xAm = -(dx * (float) sin(toRadians(entity.yaw - 90)) + dz * (float) sin(toRadians(entity.yaw)));
-		float zAm = dx * (float) cos(toRadians(entity.yaw - 90)) + dz * (float) cos(toRadians(entity.yaw));
+		float xAm = -(dx * (float) sin(toRadians(camEntity.yaw - 90)) + dz * (float) sin(toRadians(camEntity.yaw)));
+		float zAm = dx * (float) cos(toRadians(camEntity.yaw - 90)) + dz * (float) cos(toRadians(camEntity.yaw));
 		Block testBlock = arena.blocks[(int) (entity.x + xAm)][(int) entity.y][(int) (entity.z + zAm)];
 		if (testBlock.isWalkThroughable() ||
 				(int) testBlock.x == (int) entity.x && (int) testBlock.y == (int) entity.y - 1 && (int) testBlock.z == (int) entity.z) {
@@ -52,6 +55,16 @@ public class Physics {
 		}
 		return false;
 	}
+
+	public static void moveEntityMomentum(Entity entity, Entity player) {
+		Vector3f momentum = entity.momentum;
+		float accel = entity.accel;
+		moveWithCollisions(entity, entity.speed * momentum.x, entity.speed * -momentum.z, null);
+		entity.speed -= .005f + accel;
+		entity.accel += .002;
+		if (entity.speed < 0)
+			entity.speed = 0;
+	}
 	
 	/**
 	 * 
@@ -59,7 +72,8 @@ public class Physics {
 	 * @param fallSpeed
 	 * @return true if is falling
 	 */
-	public static boolean gravity(Entity entity, float fallSpeed) {
+	public static boolean gravity(Entity entity) {
+		float fallSpeed = entity.fallSpeed + entity.momentum.y * entity.speed;
 		Arena arena = entity.arena;
 		Block blockUnder = arena.blocks[(int) entity.x][(int) entity.y - 1][(int) entity.z];
 		if (!blockUnder.isWalkThroughable()) {

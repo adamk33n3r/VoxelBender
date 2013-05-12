@@ -33,7 +33,7 @@ public class VoxelBender {
 	private Arena arena;
 	private Player player;
 	
-	private boolean vSync = true;
+	private final boolean vSync = false;
 	
 	private long lastFrame;
 	private long lastFPS;
@@ -91,7 +91,7 @@ public class VoxelBender {
 		arena = new Arena();
 		arena.genArena();
 		player = new Player(Element.FIRE, arena, 10, 17, 10);
-		
+		player.processMouse();
 		TextureLoader.loadTextures(false);
 		TextureLoader.bind(Textures.SHEET);
 		
@@ -100,7 +100,8 @@ public class VoxelBender {
 	
 	private void run() {
 			
-//			Display.setVSyncEnabled(vSync);
+			Display.setVSyncEnabled(vSync);
+			Mouse.setGrabbed(true);
 			while (!Display.isCloseRequested()) {
 				delta = getDelta();
 				
@@ -170,14 +171,13 @@ public class VoxelBender {
 	}
 	
 	private void processInput(int delta) {
-		if (Mouse.isButtonDown(0) && !Mouse.isGrabbed()) {
-			Mouse.setGrabbed(true);
-		} else if (Mouse.isButtonDown(1)) {
-			Mouse.setGrabbed(false);
-		}
-		if (Mouse.isGrabbed()) {
+//		if (Mouse.isButtonDown(0) && !Mouse.isGrabbed())
+//			Mouse.setGrabbed(true);
+//		} else if (Mouse.isButtonDown(1)) {
+//			Mouse.setGrabbed(false);
+//		}
+//		if (Mouse.isGrabbed())
 			player.processMouse();
-		}
 		player.processKeyboard(delta);
 		
 	}
