@@ -17,7 +17,6 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 
-import com.bulletphysics.linearmath.Transform;
 
 import net.adam_keenan.voxel.hud.HUD;
 import net.adam_keenan.voxel.utils.Ray;
@@ -25,7 +24,6 @@ import net.adam_keenan.voxel.utils.RayTracer;
 import net.adam_keenan.voxel.world.Arena;
 import net.adam_keenan.voxel.world.Block;
 import net.adam_keenan.voxel.world.Entity;
-import net.adam_keenan.voxel.world.JBulletPhysics;
 import net.adam_keenan.voxel.world.Physics;
 import net.adam_keenan.voxel.world.Block.BlockType;
 import net.adam_keenan.voxel.world.player.BendingStyle.Element;
@@ -190,7 +188,7 @@ public class Player extends Entity {
 			this.y += dy;
 			this.z += dz;
 			camera.moveFromLook(dx, dy, dz);
-		}JBulletPhysics.step();
+		}
 	}
 	
 	private void move(float dx, float dz) {

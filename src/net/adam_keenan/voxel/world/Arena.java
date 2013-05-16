@@ -145,6 +145,7 @@ public class Arena {
 //	}
 	
 	public void update() {
+		if (projectiles != null)
 		for (Projectile projectile : projectiles)
 			projectile.update();
 	}
@@ -155,6 +156,7 @@ public class Arena {
 				for (Block block : blockY)
 					if (block.getType() != BlockType.AIR)
 						block.render();
+		if (projectiles != null)
 		for (Projectile projectile : projectiles)
 			projectile.render();
 	}
